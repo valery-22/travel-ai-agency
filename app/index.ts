@@ -1,3 +1,6 @@
+// ✅ Import Appwrite Models if you are using Appwrite
+import type { Models } from "appwrite";
+
 declare interface BaseUser {
     id: string;
     name: string;
@@ -126,6 +129,7 @@ declare interface DestinationProps {
     title: string;
 }
 
+// ✅ Fixed: Now Models.Document comes from Appwrite
 type GetAllTripsResponse = {
     allTrips: Models.Document[];
     total: number;
@@ -156,3 +160,4 @@ declare interface TripFormData {
     duration: number;
     groupType: string;
 }
+
