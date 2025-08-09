@@ -17,14 +17,21 @@ interface DestinationProps {
     rating: number;
     title: string;
     activityCount: number;
-    bgImage: string; // Assuming these are CSS class names like "bg-card-1"
+    bgImage: string;
+}
+
+// Define TripDocument type for loader
+interface TripDocument {
+    $id: string;
+    tripDetails: any;
+    imageUrls?: string[];
 }
 
 // Define Trip type based on your loader data structure
 interface Trip {
     id: string;
     name: string;
-    itinerary?: { location: string }[]; // Simplified assumption
+    itinerary?: { location: string }[];
     interests: string;
     travelStyle: string;
     estimatedPrice?: number;
@@ -32,36 +39,52 @@ interface Trip {
 }
 
 const FeaturedDestination = ({
-                                 containerClass = '',
+                                 containerClass = "",
                                  bigCard = false,
                                  rating,
                                  title,
                                  activityCount,
-                                 bgImage
+                                 bgImage,
                              }: DestinationProps) => (
     <section
         className={cn(
-            'rounded-[14px] overflow-hidden bg-cover bg-center size-full min-w-[280px]',
+            "rounded-[14px] overflow-hidden bg-cover bg-center size-full min-w-[280px]",
             containerClass,
             bgImage
         )}
     >
         <div className="bg-linear200 h-full">
             <article className="featured-card">
-                <div className={cn('bg-white rounded-20 font-bold text-red-100 w-fit py-px px-3 text-sm')}>
+                <div
+                    className={cn(
+                        "bg-white rounded-20 font-bold text-red-100 w-fit py-px px-3 text-sm"
+                    )}
+                >
                     {rating}
                 </div>
 
                 <article className="flex flex-col gap-3.5">
-                    <h2 className={cn('text-lg font-semibold text-white', { 'p-30-bold': bigCard })}>{title}</h2>
+                    <h2
+                        className={cn("text-lg font-semibold text-white", {
+                            "p-30-bold": bigCard,
+                        })}
+                    >
+                        {title}
+                    </h2>
 
                     <figure className="flex gap-2 items-center">
                         <img
                             src="/assets/images/david.webp"
                             alt="user"
-                            className={cn('size-4 rounded-full aspect-square', { 'size-11': bigCard })}
+                            className={cn("size-4 rounded-full aspect-square", {
+                                "size-11": bigCard,
+                            })}
                         />
-                        <p className={cn('text-xs font-normal text-white', { 'text-lg': bigCard })}>
+                        <p
+                            className={cn("text-xs font-normal text-white", {
+                                "text-lg": bigCard,
+                            })}
+                        >
                             {activityCount} activities
                         </p>
                     </figure>
@@ -69,49 +92,44 @@ const FeaturedDestination = ({
             </article>
         </div>
     </section>
-)
+);
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const limit = 8;
     const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || "1", 10);
+    const page = parseInt(url.searchParams.get("page") || "1", 10);
     const offset = (page - 1) * limit;
 
     const [user, tripsResult] = await Promise.all([
         getUser(),
-        getAllTrips(limit, offset),
-    ])
-
-    // Explicitly destructure with types here
-    const allTrips = tripsResult.allTrips as Array<{
-        $id: string;
-        tripDetails: any;
-        imageUrls?: string[];
-    }>;
-    const total = tripsResult.total as number;
+        getAllTrips(limit, offset) as unknown as Promise<{
+            allTrips: TripDocument[];
+            total: number;
+        }>,
+    ]);
 
     return {
-        trips: allTrips.map(({ $id, tripDetails, imageUrls }) => ({
+        trips: tripsResult.allTrips.map(({ $id, tripDetails, imageUrls }) => ({
             id: $id,
             ...parseTripData(tripDetails),
-            imageUrls: imageUrls ?? []
+            imageUrls: imageUrls ?? [],
         })),
-        total
-    }
-}
+        total: tripsResult.total,
+    };
+};
 
 const TravelPage = ({ loaderData }: Route.ComponentProps) => {
     const trips = loaderData.trips as Trip[] | [];
 
     const [searchParams] = useSearchParams();
-    const initialPage = Number(searchParams.get('page') || '1')
+    const initialPage = Number(searchParams.get("page") || "1");
 
     const [currentPage, setCurrentPage] = useState(initialPage);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        window.location.search = `?page=${page}`
-    }
+        window.location.search = `?page=${page}`;
+    };
 
     return (
         <main className="flex flex-col">
@@ -129,10 +147,11 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                         </article>
 
                         <Link to="#trips">
-                            <ButtonComponent type="button" className="button-class !h-11 !w-full md:!w-[240px]">
-                <span className="p-16-semibold text-white">
-                  Get Started
-                </span>
+                            <ButtonComponent
+                                type="button"
+                                className="button-class !h-11 !w-full md:!w-[240px]"
+                            >
+                                <span className="p-16-semibold text-white">Get Started</span>
                             </ButtonComponent>
                         </Link>
                     </section>
@@ -140,7 +159,10 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
             </section>
 
             <section className="pt-20 wrapper flex flex-col gap-10 h-full">
-                <Header title="Featured Travel Destinations" description="Check out some of the best places you visit around the world" />
+                <Header
+                    title="Featured Travel Destinations"
+                    description="Check out some of the best places you visit around the world"
+                />
                 <div className="featured">
                     <article>
                         <FeaturedDestination
@@ -197,7 +219,10 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
             </section>
 
             <section id="trips" className="py-20 wrapper flex flex-col gap-10">
-                <Header title="Handpicked Trips" description="Browse well-planned trips designes for your travel style" />
+                <Header
+                    title="Handpicked Trips"
+                    description="Browse well-planned trips designes for your travel style"
+                />
 
                 <div className="trip-grid">
                     {trips.map((trip) => (
@@ -208,7 +233,7 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                             imageUrl={trip.imageUrls[0]}
                             location={trip.itinerary?.[0]?.location ?? ""}
                             tags={[trip.interests, trip.travelStyle]}
-                            price={trip.estimatedPrice}
+                            price={trip.estimatedPrice ?? ""}
                         />
                     ))}
                 </div>
@@ -234,14 +259,16 @@ const TravelPage = ({ loaderData }: Route.ComponentProps) => {
                     </Link>
 
                     <div>
-                        {['Terms & Conditions', "Privacy Policy"].map((item) => (
-                            <Link to="/" key={item}>{item}</Link>
+                        {["Terms & Conditions", "Privacy Policy"].map((item) => (
+                            <Link to="/" key={item}>
+                                {item}
+                            </Link>
                         ))}
                     </div>
                 </div>
             </footer>
         </main>
-    )
-}
+    );
+};
 
 export default TravelPage;
