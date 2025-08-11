@@ -20,7 +20,7 @@ export const sidebarItems = [
         id: 3,
         icon: "/assets/icons/users.ts.svg",
         label: "All Users",
-        href: "/all-users.ts",
+        href: "/all-users.tsx",
     },
     {
         id: 4,
